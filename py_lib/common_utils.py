@@ -103,5 +103,5 @@ class CommonUtiler(object):
         
   def load_config(self, config_path):
     variables = {}
-    execfile(config_path, variables)
+    exec(open(config_path).read(), variables)
     return variables['config']
