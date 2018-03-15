@@ -1,0 +1,3 @@
+[submodule "external/coco-caption"]
+	path = external/coco-caption
+	url = git@github.com:DeepLearningCourse/coco-caption.git

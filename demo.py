@@ -1,28 +1,15 @@
-
 # coding: utf-8
 
-# In[1]:
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import time
-import sys
-import os
-import numpy as np
 import matplotlib.pyplot as plt
 import skimage.io as io
 import pylab
 pylab.rcParams['figure.figsize'] = (6.0, 4.0)
 
-sys.path.append('./py_lib/')
-from common_utils import CommonUtiler
-from tf_mrnn_decoder import mRNNDecoder
-from vision import ImageFeatureExtractor
+# sys.path.append('./py_lib/')
+from py_lib.common_utils import CommonUtiler
+from py_lib.tf_mrnn_decoder import mRNNDecoder
+from py_lib.vision import ImageFeatureExtractor
 
-
-# In[2]:
 
 # set up paths
 mrnn_model_path = './trained_models/coco_caption/mrnn_GRU_570K.ckpt'
@@ -37,8 +24,6 @@ ife = ImageFeatureExtractor(img_model_path)
 decoder = mRNNDecoder(config, 'demo', mrnn_vocab_path)
 
 
-# In[3]:
-
 demo_image_path = 'demo_image.jpg'
 beam_size = 3
 # extract visual feature for the image
@@ -47,9 +32,6 @@ visual_features = ife.extract_features(demo_image_path,
 # generate sentences
 decoder.load_model(mrnn_model_path)
 sentences = decoder.decode(visual_features, beam_size)
-
-
-# In[4]:
 
 # Visualize the result
 print('Top generated sentences and their log-likelihood:')
@@ -61,9 +43,3 @@ I = io.imread(demo_image_path)
 plt.imshow(I)
 plt.axis('off')
 plt.show()
-
-
-# In[ ]:
-
-
-

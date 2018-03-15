@@ -1,3 +1,11 @@
+#!/usr/bin/env bash
+
+# Download coco-caption
+# 0. check if not already cloned and clone if needed
+if [ -z "$(ls -A external/coco-caption 2>/dev/null)" ]; then
+    git submodule update --init --recursive
+fi
+
 # Download and unzip necessary files
 # 1. anno list files (Annotation copyright belongs to MS COCO team)
 mkdir ./datasets

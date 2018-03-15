@@ -1,0 +1,4 @@
+matplotlib
+numpy
+tensorflow==0.12.1
+nltk

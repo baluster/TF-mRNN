@@ -22,23 +22,15 @@ If you find this package useful in your research, please consider citing:
     }
     
 ## Requirements
-- [TensorFlow](https://www.tensorflow.org/) 0.8+
-- python 2.7 (Need ackages of numpy, scipy, nltk. All included in [Anaconda](https://store.continuum.io/cshop/anaconda/))
-- [MS COCO caption toolkit](https://github.com/tylin/coco-caption)
+- [TensorFlow](https://www.tensorflow.org/) 0.8-0.12
+- python 3.4+ (Need packages of numpy, scipy, nltk. All included in [Anaconda](https://store.continuum.io/cshop/anaconda/))
+- [MS COCO caption toolkit](https://github.com/DeepLearningCourse/coco-caption)
 
 ## Basic installation (sufficient for the demo)
-1. install [MS COCO caption toolkit](https://github.com/tylin/coco-caption)
-
-2. Suppose that toolkit is install on $PATH_COCOCap and this package is install at $PATH_mRNN_CR. Create a soft link to COCOCap as follows:
-  ```Shell
-  cd $PATH_mRNN_CR
-  ln -sf $PATH_COCOCap ./external/coco-caption
-  ```
-  
-3. Download necessary data for using a trained m-RNN model.
-  ```Shell
-  bash setup.sh
-  ```
+Download necessary data for using a trained m-RNN model. (Will clone another repository in the process.)
+```Shell
+bash ./setup.sh
+```
   
 ## Demo
 This demo shows how to use a trained model to generate descriptions for an image.
@@ -53,37 +45,37 @@ It adopts a [transposed weight sharing](http://arxiv.org/abs/1504.06692) strateg
 ## Training your own models on MS COCO
 ### Download or extract image features for images in MS COCO.
 Use the following shell to download extracted image features ([Inception-v3](http://arxiv.org/abs/1512.00567) or [VGG](http://arxiv.org/abs/1409.1556)) for MS COCO.
-  ```Shell
-  # If you want to use inception-v3 image feature, then run:
-  bash ./download_coco_inception_features.sh
-  # If you want to use VGG image feature, then run:
-  bash ./download_coco_vgg_features.sh
-  ```
+```Shell
+# If you want to use inception-v3 image feature, then run:
+bash ./download_coco_inception_features.sh
+# If you want to use VGG image feature, then run:
+bash ./download_coco_vgg_features.sh
+```
 
 Alternatively, you can extract image features yourself, you should download images from [MS COCO](http://mscoco.org/dataset/#download) dataset first.
 Please make sure that we can find the image on ./datasets/ms_coco/images/ (should have at least train2014 and val2014 folder).
 After that, type:
-  ```Shell
-  python ./exp/ms_coco_caption/extract_image_features_all.py
-  ```
+```Shell
+python ./exp/ms_coco_caption/extract_image_features_all.py
+```
 
 ### Generate dictionary.
-  ```Shell
-  python ./exp/ms_coco_caption/create_dictionary.py
-  ```
+```Shell
+python ./exp/ms_coco_caption/create_dictionary.py
+```
 
 ### Train and evaluate your model.
-  ```Shell
-  python ./exp/ms_coco_caption/mrnn_trainer_mscoco.py
-  ```
-  In the training, you can see the loss of your model, but it sometimes very
-  helpful to see the metrics (e.g. BLEU) of the generated sentences for all
-  the checkpoints of the model.
-  You can simply open another terminal:
-  ```Shell
-  python ./exp/ms_coco_caption/mrnn_validator_mscoco.py
-  ```
-  The trained model, and the evaluation results, are all shown in ./cache/models/mscoco/
+```Shell
+python ./exp/ms_coco_caption/mrnn_trainer_mscoco.py
+```
+In the training, you can see the loss of your model, but it sometimes very
+helpful to see the metrics (e.g. BLEU) of the generated sentences for all
+the checkpoints of the model.
+You can simply open another terminal:
+```Shell
+python ./exp/ms_coco_caption/mrnn_validator_mscoco.py
+```
+The trained model, and the evaluation results, are all shown in ./cache/models/mscoco/
 
 
 ## Training your models on other datasets
@@ -93,3 +85,9 @@ See ./datasets/ms_coco/mscoco_anno_files/README.md for details.
 
 ## TODO
 1. Allow end-to-end finetuning of the vision network parameters.
+
+## Troublehooting
+If you're experiencing problems with code running, try to export python path before a run:
+```Shell
+export PYTHONPATH="."
+```

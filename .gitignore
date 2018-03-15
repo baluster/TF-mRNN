@@ -51,3 +51,12 @@ target/
 
 # Specified for project
 *~
+/.ipynb_checkpoints/
+.idea/
+cache/
+datasets/
+external/*
+!external/README.md
+!external/coco-caption
+trained_models/coco_caption/*
+!trained_models/coco_caption/README.md
