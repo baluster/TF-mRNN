@@ -38,10 +38,12 @@ class ImageFeatureExtractor(object):
             # image is a path to an jpeg file
             assert os.path.exists(image), 'File does not exist %s' % image
             image_data = tf.gfile.FastGFile(image, 'rb').read()
+            sess.run(tf.global_variables_initializer())
             features = sess.run(feat_tensor, {'DecodeJpeg/contents:0': image_data})
         else:
             # image is a numpy array with image data
             image_data = image
+            sess.run(tf.global_variables_initializer())
             features = sess.run(feat_tensor, {'DecodeJpeg:0': image_data})
 
         return np.squeeze(features)

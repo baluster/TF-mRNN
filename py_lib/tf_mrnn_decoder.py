@@ -55,7 +55,9 @@ class mRNNDecoder(object):
                 flag_reset_state=True)
 
     def load_model(self, model_path):
-        self.model_init.saver.restore(self.session, model_path)
+        model_path = tf.train.latest_checkpoint(model_path)
+        if model_path is not None:
+            self.model_init.saver.restore(self.session, model_path)
         self.flag_load_model = True
         self.model_path = model_path
         logger.info('Load model from %s', model_path)
@@ -156,6 +158,7 @@ class mRNNDecoder(object):
         vf[0, :] = visual_features
         x[0] = vocab['<bos>']
 
+        session.run(tf.global_variables_initializer())
         logit, state = session.run([m.logit, m.final_state],
                                    {m.input_data: x,
                                     m.visual_features: vf,

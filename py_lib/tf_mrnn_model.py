@@ -86,12 +86,12 @@ class mRNNModel(object):
                 self._initial_state = initial_state = cell.zero_state(
                     batch_size, tf.float32)
             inputs = [tf.squeeze(input_, [1])
-                      for input_ in tf.split(1, num_steps, inputs)]
-            outputs_rnn, state = tf.nn.rnn(cell, inputs,
+                      for input_ in tf.split(inputs, num_steps, 1)]
+            outputs_rnn, state = tf.nn.static_rnn(cell, inputs,
                                            initial_state=initial_state,
                                            sequence_length=self._seq_lens)
             self._final_state = state
-            output_rnn = tf.reshape(tf.concat(1, outputs_rnn), [-1, rnn_size])
+            output_rnn = tf.reshape(tf.concat(outputs_rnn, 1), [-1, rnn_size])
 
             # Map RNN output to multimodal space
             w_r2m = tf.get_variable("w_r2m", [rnn_size, mm_size])
@@ -149,7 +149,7 @@ class mRNNModel(object):
 
         target = tf.reshape(math_ops.to_int64(self._targets), [-1])
         valid_flag = tf.reshape(self._valid_flags, [-1])
-        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logit, target)
+        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logit, labels=target)
         self._cost = cost = tf.reduce_sum(loss * valid_flag) / (
             tf.reduce_sum(valid_flag) + 1e-12)
 
