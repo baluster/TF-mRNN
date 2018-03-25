@@ -110,8 +110,7 @@ class mRNNCocoBucketDataProvider(object):
             for (ind_a, anno) in enumerate(annos):
                 data = {}
                 # Load visual features
-                feat_path = os.path.join(self.vf_dir, anno['file_path'],
-                                         anno['file_name'].split('.')[0] + '.txt')
+                feat_path = os.path.join(self.vf_dir, anno['file_path'],anno['file_name'].split('.')[0] + '.txt')
                 if os.path.exists(feat_path):
                     vf = np.loadtxt(feat_path)
                 else:
@@ -121,17 +120,13 @@ class mRNNCocoBucketDataProvider(object):
                 # Encode sentences
                 data['sentences'] = []
                 for (ind_s, sentence) in enumerate(anno['sentences']):
-                    sentence_encode = self.cu.encode_sentence(sentence, vocab,
-                                                              flag_add_bos=False)
+                    sentence_encode = self.cu.encode_sentence(sentence, vocab,flag_add_bos=False)
                     self._data_pointer.append((ind_img, ind_s))
                     data['sentences'].append(np.array(sentence_encode))
 
                 self._data_queue.append(data)
                 ind_img += 1
                 if verbose and (ind_a + 1) % 5000 == 0:
-                    logger.info('Load %d/%d annotation from file %s', ind_a + 1,
-                                len(annos), anno_file_path)
+                    logger.info('Load %d/%d annotation from file %s', ind_a + 1,len(annos), anno_file_path)
 
-        logger.info('Load %d images, %d sentences from %d files, %d image failed',
-                    len(self._data_queue), len(self._data_pointer),
-                    len(self.anno_files_path), num_failed)
+        logger.info('Load %d images, %d sentences from %d files, %d image failed', len(self._data_queue), len(self._data_pointer), len(self.anno_files_path), num_failed)

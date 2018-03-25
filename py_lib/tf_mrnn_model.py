@@ -18,9 +18,7 @@ from tensorflow.python.ops import math_ops
 from .common_utils import CommonUtiler
 
 logger = logging.getLogger('TfMrnnModel')
-logging.basicConfig(
-    format="[%(asctime)s - %(filename)s:line %(lineno)4s] %(message)s",
-    datefmt='%d %b %H:%M:%S')
+logging.basicConfig(format="[%(asctime)s - %(filename)s:line %(lineno)4s] %(message)s",datefmt='%d %b %H:%M:%S')
 logger.setLevel(logging.INFO)
 
 
@@ -57,19 +55,16 @@ class mRNNModel(object):
         if config.rnn_type == 'GRU':
             rnn_cell_basic = tf.nn.rnn_cell.GRUCell(rnn_size)
         elif config.rnn_type == 'LSTM':
-            rnn_cell_basic = tf.nn.rnn_cell.LSTMCell(rnn_size, input_size=emb_size,
-                                                     use_peepholes=True, state_is_tuple=False)
+            rnn_cell_basic = tf.nn.rnn_cell.LSTMCell(rnn_size, input_size=emb_size,use_peepholes=True, state_is_tuple=False)
         else:
             raise NameError("Unknown rnn type %s!" % config.rnn_type)
         if is_training and config.keep_prob_rnn < 1:
-            rnn_cell_basic = tf.nn.rnn_cell.DropoutWrapper(
-                rnn_cell_basic, output_keep_prob=config.keep_prob_rnn)
+            rnn_cell_basic = tf.nn.rnn_cell.DropoutWrapper(rnn_cell_basic, output_keep_prob=config.keep_prob_rnn)
         cell = tf.nn.rnn_cell.MultiRNNCell([rnn_cell_basic] * config.num_rnn_layers, state_is_tuple=False)
         state_size = cell.state_size
 
         # Create word embeddings
-        self._embedding = embedding = tf.get_variable("embedding",
-                                                      [vocab_size, emb_size])
+        self._embedding = embedding = tf.get_variable("embedding",[vocab_size, emb_size])
         inputs = tf.nn.embedding_lookup(embedding, self._input_data)
 
         if is_training and config.keep_prob_emb < 1:
@@ -80,16 +75,12 @@ class mRNNModel(object):
             mm_size = config.mm_size
             # Run RNNs
             if flag_reset_state:
-                self._initial_state = initial_state = tf.placeholder(tf.float32,
-                                                                     [batch_size, state_size])
+                self._initial_state = initial_state = tf.placeholder(tf.float32,[batch_size, state_size])
             else:
-                self._initial_state = initial_state = cell.zero_state(
-                    batch_size, tf.float32)
+                self._initial_state = initial_state = cell.zero_state(batch_size, tf.float32)
             inputs = [tf.squeeze(input_, [1])
                       for input_ in tf.split(inputs, num_steps, 1)]
-            outputs_rnn, state = tf.nn.static_rnn(cell, inputs,
-                                           initial_state=initial_state,
-                                           sequence_length=self._seq_lens)
+            outputs_rnn, state = tf.nn.static_rnn(cell, inputs,initial_state=initial_state,sequence_length=self._seq_lens)
             self._final_state = state
             output_rnn = tf.reshape(tf.concat(outputs_rnn, 1), [-1, rnn_size])
 
@@ -101,8 +92,7 @@ class mRNNModel(object):
             # Map Visual feature to multimodal space
             w_vf2m = tf.get_variable("w_vf2m", [vf_size, mm_size])
             b_vf2m = tf.get_variable("b_vf2m", [mm_size])
-            mm_vf_single = tf.nn.relu(
-                tf.matmul(self._visual_features, w_vf2m) + b_vf2m)
+            mm_vf_single = tf.nn.relu(tf.matmul(self._visual_features, w_vf2m) + b_vf2m)
             mm_vf = tf.reshape(tf.tile(mm_vf_single, [1, num_steps]), [-1, mm_size])
             multimodal_l = multimodal_l + mm_vf
             if is_training and config.keep_prob_mm < 1:
@@ -118,20 +108,16 @@ class mRNNModel(object):
             w_vf2state = tf.get_variable("w_vf2state", [vf_size, state_size])
             b_vf2state = tf.get_variable("b_vf2state", [state_size])
             if flag_reset_state:
-                self._initial_state = initial_state = tf.placeholder(tf.float32,
-                                                                     [batch_size, state_size])
+                self._initial_state = initial_state = tf.placeholder(tf.float32,[batch_size, state_size])
             else:
-                self._initial_state = initial_state = tf.nn.relu(
-                    tf.matmul(self._visual_features, w_vf2state) + b_vf2state)
+                self._initial_state = initial_state = tf.nn.relu(tf.matmul(self._visual_features, w_vf2state) + b_vf2state)
 
             # Run RNNs
             inputs = [tf.squeeze(input_, [1])
-                      for input_ in tf.split(1, num_steps, inputs)]
-            outputs_rnn, state = tf.nn.rnn(cell, inputs,
-                                           initial_state=initial_state,
-                                           sequence_length=self._seq_lens)
+                      for input_ in tf.split(inputs, num_steps, 1)]
+            outputs_rnn, state = tf.nn.static_rnn(cell, inputs,initial_state=initial_state,sequence_length=self._seq_lens)
             self._final_state = state
-            output_rnn = tf.reshape(tf.concat(1, outputs_rnn), [-1, rnn_size])
+            output_rnn = tf.reshape(tf.concat(outputs_rnn, 1), [-1, rnn_size])
 
             # Map multimodal space to word space
             w_m2w = tf.get_variable("w_m2w", [rnn_size, emb_size])
@@ -150,8 +136,7 @@ class mRNNModel(object):
         target = tf.reshape(math_ops.to_int64(self._targets), [-1])
         valid_flag = tf.reshape(self._valid_flags, [-1])
         loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logit, labels=target)
-        self._cost = cost = tf.reduce_sum(loss * valid_flag) / (
-            tf.reduce_sum(valid_flag) + 1e-12)
+        self._cost = cost = tf.reduce_sum(loss * valid_flag) / (tf.reduce_sum(valid_flag) + 1e-12)
 
         # Create saver if necessary
         if flag_with_saver:
@@ -166,8 +151,7 @@ class mRNNModel(object):
         # Create learning rate and gradients optimizer
         self._lr = tf.Variable(0.0, trainable=False)
         tvars = tf.trainable_variables()
-        grads, _ = tf.clip_by_global_norm(tf.gradients(cost, tvars),
-                                          config.max_grad_norm)
+        grads, _ = tf.clip_by_global_norm(tf.gradients(cost, tvars),config.max_grad_norm)
         if hasattr(config, 'optimizer'):
             if config.optimizer == 'ori':
                 optimizer = tf.train.GradientDescentOptimizer(self.lr)

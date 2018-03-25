@@ -1,6 +1,10 @@
 import numpy as np
 import os
 import logging
+import sys
+
+sys.path.append('D:\\code\\python\\TF-mRNN')
+os.chdir('../../')
 
 from py_lib.common_utils import CommonUtiler
 

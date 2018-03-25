@@ -4,6 +4,10 @@ import time
 import os
 import logging
 import tensorflow as tf
+import sys
+
+sys.path.append('D:\\code\\python\\TF-mRNN')
+os.chdir('../../')
 
 from py_lib.tf_data_provider import mRNNCocoBucketDataProvider
 from py_lib.common_utils import CommonUtiler
@@ -49,25 +53,21 @@ flags.DEFINE_string("pre_trained_model_path",
 FLAGS = flags.FLAGS
 
 
-def run_epoch(session, iters_done, config, models, data_provider,
-              verbose=False):
+def run_epoch(session, iters_done, config, models, data_provider,verbose=False):
     """Runs the model on the given data."""
     start_time = time.time()
     costs = 0.0
     iters = 0
 
     # Determine the learning rate with lr decay
-    lr_decay_dstep = max(0,
-                         (iters_done - config.lr_decay_keep) // config.lr_decay_iter)
+    lr_decay_dstep = max(0,(iters_done - config.lr_decay_keep) // config.lr_decay_iter)
     lr_decay = config.lr_decay ** lr_decay_dstep
     for m in models:
         m.assign_lr(session, config.learning_rate * lr_decay)
 
-    for step, (ind_buc, x, y, vf, fg, sl) in enumerate(
-            data_provider.generate_batches(config.batch_size, config.buckets)):
+    for step, (ind_buc, x, y, vf, fg, sl) in enumerate(data_provider.generate_batches(config.batch_size, config.buckets)):
         # update the lr if necessary
-        lr_decay_dstep_cur = max(0,
-                                 (iters_done + step - config.lr_decay_keep) // config.lr_decay_iter)
+        lr_decay_dstep_cur = max(0,(iters_done + step - config.lr_decay_keep) // config.lr_decay_iter)
         if lr_decay_dstep_cur > lr_decay_dstep:
             lr_decay_dstep = lr_decay_dstep_cur
             lr_decay = config.lr_decay ** lr_decay_dstep
@@ -111,10 +111,9 @@ def main(_):
     config = cu.load_config(config_path)
 
     # Start model training
-    with tf.Graph().as_default(), tf.Session(config=tf.ConfigProto(
-            intra_op_parallelism_threads=FLAGS.ses_threads)) as session:
-        initializer = tf.random_uniform_initializer(-config.init_scale,
-                                                    config.init_scale)
+    with tf.Graph().as_default(), tf.Session(config=tf.ConfigProto(intra_op_parallelism_threads=FLAGS.ses_threads)) as session:
+        #initializer = tf.random_uniform_initializer(-config.init_scale,config.init_scale)
+        initializer = tf.random_normal_initializer(-config.init_scale,config.init_scale)
         assert len(config.buckets) >= 1
         assert config.buckets[-1] == config.max_num_steps
         models = []
@@ -148,16 +147,14 @@ def main(_):
             tf.global_variables_initializer()
 
         iters_done = 0
-        data_provider = mRNNCocoBucketDataProvider(FLAGS.anno_files_path.split(':'),
-                                                   FLAGS.vocab_path, config.vocab_size, FLAGS.vf_dir, config.vf_size)
+        data_provider = mRNNCocoBucketDataProvider(FLAGS.anno_files_path.split(':'),FLAGS.vocab_path, config.vocab_size, FLAGS.vf_dir, config.vf_size)
+
         for i in range(config.num_epoch):
-            train_cost, iters_done = run_epoch(session, iters_done, config, models,
-                                               data_provider, verbose=True)
+            train_cost, iters_done = run_epoch(session, iters_done, config, models,data_provider, verbose=True)
             logger.info("Train cost for epoch %d is %.3f" % (i, train_cost))
 
         # Save final copy of the model
-        models[0].saver.save(session, os.path.join(m.variable_dir,
-                                                   'model_%d.ckpt' % iters_done))
+        models[0].saver.save(session, os.path.join(m.variable_dir,'model_%d.ckpt' % iters_done))
 
 
 if __name__ == "__main__":
